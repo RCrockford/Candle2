@@ -784,10 +784,18 @@ void frmMain::onSendSerial()
                     m_fileEndSent = true;
                 }
 
-                if(m_settings->UseM6() && (command.contains("M6") || command.contains("M06")) && command[0] != '(' && command[0] != ';')
+                if((command.contains("M6") || command.contains("M06")) && command[0] != '(' && command[0] != ';')
                 {
-                    qDebug() << "Tool change command";
-                    m_toolChangeActive = true;
+                    if(m_settings->UseM6())
+                    {
+                        qDebug() << "Tool change command";
+                        m_toolChangeActive = true;
+                    }
+                    else if(m_Protocol == PROT_GRBL1_1)
+                    {
+                        // suppress M6 commands, do a zero length dwell instead
+                        command = "G04 P0";
+                    }
                 }
 
                 if(m_Protocol == PROT_GRBL1_1)
