@@ -624,6 +624,7 @@ void frmMain::on_chkHeightMapUse_clicked(bool checked)
             QString coords("XxYyZzIiJjKkRr");
             QString g("Gg");
             QString m("Mm");
+            QString t("Tt");
 
             char codeChar;          // Single code char G1 -> G
             float codeNum;          // Code number      G1 -> 1
@@ -632,6 +633,7 @@ void frmMain::on_chkHeightMapUse_clicked(bool checked)
             bool isLinearMove;
             bool hasCommand;
             bool isMachineCoords;
+            bool hasCoords;
 
             m_programLoading = true;
             for (int i = 0; i < m_programModel.rowCount() - 1; i++) {
@@ -640,6 +642,7 @@ void frmMain::on_chkHeightMapUse_clicked(bool checked)
                 isLinearMove = false;
                 hasCommand = false;
                 isMachineCoords = false;
+                hasCoords = false;
 
                 if (line < 0 || line == lastCommandIndex || lastSegmentIndex == list->count() - 1) {
                     item.command = command;
@@ -676,17 +679,20 @@ void frmMain::on_chkHeightMapUse_clicked(bool checked)
 
                                 hasCommand = true;                  // Command has 'G'
                             } else {
-                                if (m.contains(codeChar))
-                                    hasCommand = true;              // Command has 'M'
+                                if (m.contains(codeChar) || t.contains(codeChar))
+                                    hasCommand = true;              // Command has 'M' or 'T'
                                 newCommand.append(arg);       // Other commands
                             }
+                        }
+                        else {
+                            hasCoords = true;       // have at least one co-ord
                         }
                     }
 
                     // Find first linesegment by command index
                     for (int j = lastSegmentIndex; j < list->count(); j++) {
                         if (list->at(j)->getLineNumber() == line) {
-                            if (!qIsNaN(list->at(j)->getEnd().length()) && ((isLinearMove && !isMachineCoords) || (!hasCommand && !lastCode.isEmpty()))) {
+                            if (!qIsNaN(list->at(j)->getEnd().length()) && ((isLinearMove && !isMachineCoords && hasCoords) || (!hasCommand && !lastCode.isEmpty()))) {
                                 // Create new commands for each linesegment with given command index
                                 while ((j < list->count()) && (list->at(j)->getLineNumber() == line)) {
 
